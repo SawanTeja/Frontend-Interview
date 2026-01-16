@@ -148,7 +148,11 @@ Yes, using both TypeScript and TanStack Query is compulsory for this assignment.
 **Is using JSON Server mandatory, or can I create my own server?**  
 Using JSON Server is mandatory. Please use the provided JSON Server setup rather than creating your own backend.
 
+**What should I use for styling?**  
+Use **Tailwind CSS** and **shadcn/ui** for styling. You are expected to install, configure, and use both Tailwind CSS and shadcn/ui components in your implementation.
+
 **Have more questions?**  
 If you have any additional doubts, feel free to reach out at: `developer@camonk.com`.
+
 
 Good luck! 🚀
