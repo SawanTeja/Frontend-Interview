@@ -12,11 +12,13 @@ Welcome to the CA Monk Blog Application assignment! This project tests your abil
 
 ### Setup Instructions
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd camonk-interview
-   ```
+1. **Fork the repository**
+   - Click **Fork** on GitHub to create a copy in your account.
+   - Clone your forked repository:
+     ```bash
+     git clone <your-forked-repo-url>
+     cd camonk-interview
+     ```
 
 2. **Install dependencies**
    ```bash
@@ -134,13 +136,13 @@ content: The full content of the blog
 Once you've completed the assignment:
 1. Ensure all tasks are working correctly
 2. Commit your changes with clear commit messages
-3. Push to your repository
-4. Share the repository link for review in the google form provided
+3. Push your changes to your **forked** repository
+4. Share the link to your forked repository for review in the Google Form provided
 
 ## FAQ
 
 **Do I need to deploy the code?**  
-No. Simply clone the repository, commit and push your changes, and share the repository link via the Google Form.
+No. Simply work on your forked repository, commit and push your changes, and share the repository link via the Google Form.
 
 **Is it mandatory to use TypeScript and TanStack Query?**  
 Yes, using both TypeScript and TanStack Query is compulsory for this assignment.
@@ -151,8 +153,19 @@ Using JSON Server is mandatory. Please use the provided JSON Server setup rather
 **What should I use for styling?**  
 Use **Tailwind CSS** and **shadcn/ui** for styling. You are expected to install, configure, and use both Tailwind CSS and shadcn/ui components in your implementation.
 
+**What are the main things you will evaluate?**  
+We will mainly look at:
+- Correct use of the required technologies (TypeScript, TanStack Query, Tailwind CSS, shadcn/ui)  
+- Code quality and structure  
+- UI/UX, including responsiveness and overall experience  
+
+**What happens after I submit the assignment?**  
+If you are shortlisted, you will receive an email about the next round. The next round will be a task-based session focused on your coding skills and React knowledge.
+
+**Will my solution be used commercially?**  
+No. This assignment is only for the hiring process and will not be used commercially.
+
 **Have more questions?**  
 If you have any additional doubts, feel free to reach out at: `developer@camonk.com`.
-
 
 Good luck! 🚀
