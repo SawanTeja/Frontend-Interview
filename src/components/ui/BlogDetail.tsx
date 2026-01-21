@@ -1,9 +1,9 @@
 import { useBlog } from "../../hooks/useBlogs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tag, Share2, Bookmark, AlertCircle } from "lucide-react";
+import { Tag, Share2, Bookmark, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { calculateReadTime } from "../../lib/utils";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useLayoutEffect } from "react";
 
 interface BlogDetailProps {
   id: number | null;
@@ -14,10 +14,27 @@ export const BlogDetail = ({ id }: BlogDetailProps) => {
   
   const scrollRef = useRef<HTMLDivElement>(null);
   
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  
   const [imageStyle, setImageStyle] = useState({
     scale: 1,
     opacity: 1,
   });
+
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [showReadMoreBtn, setShowReadMoreBtn] = useState(false);
+
+  useEffect(() => {
+    setIsDescriptionExpanded(false);
+    setShowReadMoreBtn(false);
+  }, [id]);
+
+  useLayoutEffect(() => {
+    if (descriptionRef.current && blog) {
+      const isOverflowing = descriptionRef.current.scrollHeight > descriptionRef.current.clientHeight;
+      setShowReadMoreBtn(isOverflowing);
+    }
+  }, [blog, id]); 
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,7 +69,6 @@ export const BlogDetail = ({ id }: BlogDetailProps) => {
     <div ref={scrollRef} className="h-full w-full overflow-y-auto custom-scrollbar bg-transparent relative">
       <div className="w-full">
         
-
         <div className="sticky top-0 z-0 pt-4 px-4 mb-[-100px]">
           <div 
             className="w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-sm border border-white/20 bg-muted/20 origin-top transition-all duration-100 ease-out will-change-transform"
@@ -70,11 +86,10 @@ export const BlogDetail = ({ id }: BlogDetailProps) => {
           </div>
         </div>
 
-
         <div className="relative z-10 px-2 pb-20">
           <div className="bg-white/90 backdrop-blur-2xl p-8 rounded-[2rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border border-white/60">
             
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight mb-4">
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight mb-4 break-words">
               {blog.title}
             </h1>
 
@@ -94,14 +109,37 @@ export const BlogDetail = ({ id }: BlogDetailProps) => {
               <span>{calculateReadTime(blog.content)} read</span>
             </div>
 
-            <div className="p-6 bg-gradient-to-r from-blue-50/80 to-transparent border-l-4 border-blue-500 rounded-r-xl mb-10">
-              <p className="text-lg text-slate-700 italic font-serif leading-relaxed">
+            <div 
+              onClick={() => showReadMoreBtn && setIsDescriptionExpanded(!isDescriptionExpanded)}
+              className={`
+                group relative p-6 bg-gradient-to-r from-blue-50/80 to-transparent border-l-4 border-blue-500 rounded-r-xl mb-10 
+                transition-all duration-300 hover:bg-blue-50
+                ${showReadMoreBtn ? 'cursor-pointer' : ''}
+              `}
+            >
+              <p 
+                ref={descriptionRef}
+                className={`
+                  text-lg text-slate-700 italic font-serif leading-relaxed transition-all break-words
+                  ${isDescriptionExpanded ? '' : 'line-clamp-2'}
+                `}
+              >
                 {blog.description}
               </p>
+              
+              {showReadMoreBtn && (
+                <div className="mt-2 flex items-center gap-1 text-xs font-bold text-blue-600 uppercase tracking-wider opacity-60 group-hover:opacity-100 transition-opacity select-none">
+                   {isDescriptionExpanded ? (
+                     <>Read Less <ChevronUp className="w-3 h-3" /></>
+                   ) : (
+                     <>Read More <ChevronDown className="w-3 h-3" /></>
+                   )}
+                </div>
+              )}
             </div>
 
-            <article className="prose prose-lg prose-slate max-w-none mb-10">
-              <p className="whitespace-pre-line leading-loose text-slate-800">
+            <article className="prose prose-lg prose-slate max-w-none mb-10 break-words">
+              <p className="whitespace-pre-line leading-loose text-slate-800 break-words">
                 {blog.content}
               </p>
             </article>
@@ -138,7 +176,6 @@ export const BlogDetail = ({ id }: BlogDetailProps) => {
     </div>
   );
 };
-
 
 const EmptyState = () => (
   <div className="h-full flex items-center justify-center p-8 text-center opacity-60">
