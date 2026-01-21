@@ -36,18 +36,13 @@ export const CreateBlogForm = ({ onSuccess, onCancel }: CreateBlogFormProps) => 
     );
   };
 
-  // Glass Input Styles
   const inputStyles = "bg-white/20 border-white/30 focus:bg-white/40 focus:border-primary/50 placeholder:text-slate-500/60 backdrop-blur-sm transition-all";
 
   return (
     <div className="h-full w-full flex flex-col items-center justify-center p-4">
       
-      {/* We don't use the standard <Card> wrapper here because we want 
-        custom glass transparency that merges with the background 
-      */}
       <div className="w-full max-w-3xl glass rounded-2xl p-1 shadow-2xl animate-float">
         
-        {/* Header Section */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-500/20 rounded-lg text-blue-700">
@@ -63,7 +58,6 @@ export const CreateBlogForm = ({ onSuccess, onCancel }: CreateBlogFormProps) => 
           </Button>
         </div>
 
-        {/* Scrollable Form Content */}
         <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
           <form onSubmit={handleSubmit} className="space-y-6">
             
@@ -134,7 +128,6 @@ export const CreateBlogForm = ({ onSuccess, onCancel }: CreateBlogFormProps) => 
               />
             </div>
 
-            {/* Actions */}
             <div className="flex gap-4 justify-end pt-4 border-t border-white/10">
               <Button 
                 type="button" 

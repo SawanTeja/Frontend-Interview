@@ -1,7 +1,9 @@
 import { useBlog } from "../../hooks/useBlogs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Clock, BookOpen, AlertCircle, Share2, Bookmark } from "lucide-react";
+import { Tag, Share2, Bookmark, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { calculateReadTime } from "../../lib/utils";
+import { useRef, useState, useEffect } from "react";
 
 interface BlogDetailProps {
   id: number | null;
@@ -9,164 +11,157 @@ interface BlogDetailProps {
 
 export const BlogDetail = ({ id }: BlogDetailProps) => {
   const { data: blog, isLoading, isError } = useBlog(id ? id.toString() : null);
+  
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const [imageStyle, setImageStyle] = useState({
+    scale: 1,
+    opacity: 1,
+  });
 
-  // --- EMPTY STATE ---
-  if (!id) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-8 text-center">
-        <div className="w-24 h-24 bg-gradient-to-tr from-blue-100 to-purple-100 rounded-full flex items-center justify-center mb-6 shadow-inner animate-float">
-           <BookOpen className="w-10 h-10 text-blue-600/60" />
-        </div>
-        <h2 className="text-3xl font-bold text-slate-800 mb-3 tracking-tight">Welcome Back</h2>
-        <p className="text-slate-500 text-lg max-w-md leading-relaxed">
-          Select a story from the sidebar to immerse yourself in reading.
-        </p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollRef.current) return;
+      const scrollTop = scrollRef.current.scrollTop;
+      const newScale = Math.max(0.9, 1 - scrollTop / 600);
+      const newOpacity = Math.max(0, 1 - scrollTop / 700);
 
-  // --- LOADING STATE ---
-  if (isLoading) {
-    return (
-      <div className="w-full h-full bg-white/40">
-        <Skeleton className="w-full h-[40vh] bg-slate-200/50" />
-        <div className="max-w-4xl mx-auto px-8 -mt-20 relative z-10">
-          <div className="bg-white/60 backdrop-blur-xl p-8 rounded-3xl shadow-lg border border-white/40 space-y-4">
-             <Skeleton className="h-12 w-3/4 bg-slate-200/50" />
-             <div className="flex gap-4">
-               <Skeleton className="h-10 w-24 rounded-lg bg-slate-200/50" />
-               <Skeleton className="h-10 w-24 rounded-lg bg-slate-200/50" />
-             </div>
-          </div>
-          <div className="mt-10 space-y-6">
-            <Skeleton className="h-4 w-full bg-slate-200/50" />
-            <Skeleton className="h-4 w-full bg-slate-200/50" />
-            <Skeleton className="h-4 w-full bg-slate-200/50" />
-            <Skeleton className="h-4 w-2/3 bg-slate-200/50" />
-          </div>
-        </div>
-      </div>
-    );
-  }
+      setImageStyle({
+        scale: newScale,
+        opacity: newOpacity,
+      });
+    };
 
-  // --- ERROR STATE ---
-  if (isError || !blog) {
-    return (
-      <div className="h-full flex items-center justify-center p-6">
-        <div className="bg-red-50 border border-red-100 p-8 rounded-2xl text-center text-red-800 shadow-sm">
-           <AlertCircle className="w-10 h-10 mx-auto mb-4 opacity-50" />
-           <p className="font-medium">Failed to load content.</p>
-        </div>
-      </div>
-    );
-  }
+    const scrollContainer = scrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
 
-  // --- MAIN MAGAZINE LAYOUT ---
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
+
+  if (!id) return <EmptyState />;
+  if (isLoading) return <LoadingState />;
+  if (isError || !blog) return <ErrorState />;
+
   return (
-    <div className="min-h-full pb-32 bg-transparent">
-      
-      {/* 1. HERO IMAGE (Full Bleed) */}
-      <div className="relative w-full h-[50vh] min-h-[400px]">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/60 z-10" />
-        <img 
-          src={blog.coverImage} 
-          alt={blog.title} 
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://placehold.co/1200x600?text=No+Image';
-          }}
-        />
-      </div>
-
-      {/* 2. OVERLAPPING HEADER CARD */}
-      <div className="relative z-20 max-w-4xl mx-auto px-6">
+    <div ref={scrollRef} className="h-full w-full overflow-y-auto custom-scrollbar bg-transparent relative">
+      <div className="w-full">
         
-        {/* Title Container */}
-        <div className="-mt-32 backdrop-blur-3xl bg-white/80 border border-white/60 shadow-[0_30px_60px_rgba(0,0,0,0.12)] rounded-[2rem] p-8 md:p-12">
-          
-          {/* Badge & Actions Row */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <div className="flex flex-wrap gap-2">
-              {blog.category.map((cat) => (
-                <span 
-                  key={cat} 
-                  className="px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase bg-blue-100 text-blue-700 border border-blue-200"
-                >
-                  {cat}
-                </span>
-              ))}
-            </div>
-            
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon" className="rounded-full bg-transparent border-slate-300 hover:bg-blue-50">
-                <Bookmark className="w-4 h-4 text-slate-600" />
-              </Button>
-              <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white gap-2 px-6">
-                <Share2 className="w-4 h-4" /> Share
-              </Button>
-            </div>
-          </div>
 
-          {/* Big Title */}
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900 leading-[1.1] mb-8">
-            {blog.title}
-          </h1>
-
-          {/* Meta Data Grid (Like Reference) */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 py-6 border-t border-b border-slate-200/60">
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Date</p>
-              <div className="flex items-center gap-2 text-slate-700 font-semibold">
-                <Calendar className="w-4 h-4 text-blue-500" />
-                <span>{new Date(blog.date).toLocaleDateString(undefined, { 
-                  month: 'short', day: 'numeric', year: 'numeric' 
-                })}</span>
-              </div>
-            </div>
-            
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Read Time</p>
-              <div className="flex items-center gap-2 text-slate-700 font-semibold">
-                <Clock className="w-4 h-4 text-blue-500" />
-                <span>5 Mins</span>
-              </div>
-            </div>
-
-            <div className="hidden md:block">
-               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Author</p>
-               <div className="flex items-center gap-2 text-slate-700 font-semibold">
-                 <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-400 to-purple-400" />
-                 <span>Admin</span>
-               </div>
-            </div>
+        <div className="sticky top-0 z-0 pt-4 px-4 mb-[-100px]">
+          <div 
+            className="w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-sm border border-white/20 bg-muted/20 origin-top transition-all duration-100 ease-out will-change-transform"
+            style={{
+              transform: `scale(${imageStyle.scale})`,
+              opacity: imageStyle.opacity,
+            }}
+          >
+            <img 
+              src={blog.coverImage} 
+              alt={blog.title} 
+              className="w-full h-full object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/1200x600?text=No+Image'; }}
+            />
           </div>
         </div>
 
-        {/* 3. BIG READABLE CONTENT */}
-        <article className="mt-16 max-w-none">
-          {/* We use a custom style block here for maximum readability */}
-          <div className="prose prose-xl prose-slate md:prose-2xl max-w-none">
-            <p className="
-              text-xl md:text-2xl leading-[2] text-slate-800 font-serif
-              first-letter:text-6xl first-letter:font-bold first-letter:text-blue-600 first-letter:float-left first-letter:mr-3 first-letter:mt-[-6px]
-              whitespace-pre-line
-            ">
-              {blog.content}
-            </p>
-          </div>
-        </article>
 
-        {/* Footer Divider */}
-        <div className="mt-24 flex flex-col items-center justify-center space-y-4">
-            <div className="flex gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-600" />
-              <div className="w-2 h-2 rounded-full bg-blue-400" />
-              <div className="w-2 h-2 rounded-full bg-blue-200" />
+        <div className="relative z-10 px-2 pb-20">
+          <div className="bg-white/90 backdrop-blur-2xl p-8 rounded-[2rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] border border-white/60">
+            
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight mb-4">
+              {blog.title}
+            </h1>
+
+            <div className="flex flex-wrap items-center text-xs md:text-sm font-medium text-slate-500 mb-8 gap-3">
+              <span className="text-blue-600 uppercase tracking-wider font-bold bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                {blog.category[0] || "General"}
+              </span>
+              <span className="text-slate-300">|</span>
+              <span className="flex items-center gap-1">
+                {new Date(blog.date).toLocaleDateString(undefined, { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </span>
+              <span className="text-slate-300">|</span>
+              <span>{calculateReadTime(blog.content)} read</span>
             </div>
-            <p className="text-sm text-slate-400 font-medium italic">Thanks for reading</p>
+
+            <div className="p-6 bg-gradient-to-r from-blue-50/80 to-transparent border-l-4 border-blue-500 rounded-r-xl mb-10">
+              <p className="text-lg text-slate-700 italic font-serif leading-relaxed">
+                {blog.description}
+              </p>
+            </div>
+
+            <article className="prose prose-lg prose-slate max-w-none mb-10">
+              <p className="whitespace-pre-line leading-loose text-slate-800">
+                {blog.content}
+              </p>
+            </article>
+
+            <hr className="border-slate-200 mb-8" />
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  <Tag className="w-3 h-3" /> Tags
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {blog.category.map((cat) => (
+                    <span key={cat} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium hover:bg-blue-100 hover:text-blue-600 transition-colors cursor-pointer border border-slate-200">
+                      #{cat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="outline" className="gap-2 rounded-full border-slate-300 text-slate-600 h-9 px-4 text-sm">
+                  <Bookmark className="w-4 h-4" /> Save
+                </Button>
+                <Button className="gap-2 rounded-full bg-slate-900 text-white hover:bg-slate-800 h-9 px-4 text-sm">
+                  <Share2 className="w-4 h-4" /> Share
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
     </div>
   );
 };
+
+
+const EmptyState = () => (
+  <div className="h-full flex items-center justify-center p-8 text-center opacity-60">
+    <div className="space-y-2">
+      <div className="text-4xl">👈</div>
+      <p className="text-xl font-medium text-slate-800">Select a post to read</p>
+    </div>
+  </div>
+);
+
+const LoadingState = () => (
+  <div className="p-4 w-full mx-auto space-y-6">
+    <Skeleton className="w-full aspect-[21/9] rounded-2xl bg-slate-200/50" />
+    <Skeleton className="h-12 w-3/4 bg-slate-200/50" />
+    <div className="flex gap-4"><Skeleton className="h-6 w-32" /><Skeleton className="h-6 w-32" /></div>
+    <div className="space-y-4 pt-4">
+      <Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" />
+    </div>
+  </div>
+);
+
+const ErrorState = () => (
+  <div className="h-full flex items-center justify-center text-red-500 font-medium">
+    <div className="flex items-center gap-2"><AlertCircle className="w-5 h-5" /> Failed to load content</div>
+  </div>
+);
